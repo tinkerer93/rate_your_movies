@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+</head>
+<body>
+    {% if users %}
+        <ul>
+            {% for user in users %}
+                <li><a href="{% url 'users:detail' user.id %}"></a><p>{{ user.first_name }} {{ user.last_name }}</p></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No users are available right now.</p>
+    {% endif %}
+</body>
+</html>
