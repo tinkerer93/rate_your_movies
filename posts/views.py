@@ -1,9 +1,12 @@
 from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .models import Post
 
 
-def detail(request, post_id):
-    return HttpResponse(f'Get some info about {post_id} post.')
+class DetailView(APIView):
 
-def top_10(request):
-    post_list = Post.get_top_ten_posts()
+    def get(self, request, post_id):
+        post_details = Post.objects.get(pk=post_id)
+        if post_details:
+            pass
