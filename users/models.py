@@ -10,6 +10,9 @@ class User(models.Model):
     email = models.EmailField()
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name="author")
 
+    def get_user_by_id(self, user_id):
+        return self.objects.get(pk=user_id)
+
     @cached_property
     def get_number_of_posts_by_user(self):
         return self.post.count()
