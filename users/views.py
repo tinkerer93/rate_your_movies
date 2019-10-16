@@ -6,11 +6,21 @@ from .models import User
 from .serializers import UserSerializer
 
 
+class UsersView(APIView):
+    def get(self, request):
+        user_list = User.objects.all()
+        if len(user_list):
+            serializer = UserSerializer(user_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404("No users are available.")
+
 class UserDetailView(APIView):
 
     @staticmethod
     def get_user_or_raise_404(user_id):
-        user_details = User.get_user_by_id(user_id)
+        user = User()
+        user_details = user.get_user_by_id(user_id)
         if user_details.DoesNotExist:
             raise Http404("User does not exist.")
         return user_details

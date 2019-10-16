@@ -21,7 +21,8 @@ class PostDetailView(APIView):
 
     @staticmethod
     def get_post_or_raise_404(post_id):
-        post_details = Post.get_post_by_id(post_id)
+        post = Post()
+        post_details = post.get_post_by_id(post_id)
         if post_details.DoesNotExist:
             raise Http404("Post does not exist.")
         return post_details

@@ -6,7 +6,7 @@ class PostSerializer(serializers.Serializer):
     title = serializers.CharField(required=True, allow_blank=False, max_length=100)
     text = serializers.CharField(required=True, allow_blank=False, max_length=2000)
     date_published = serializers.DateTimeField(required=True)
-    rating = serializers.IntegerField(allow_blank=True)
+    rating = serializers.IntegerField()
 
     def create(self, validated_data):
         return Post.objects.create(**validated_data)
