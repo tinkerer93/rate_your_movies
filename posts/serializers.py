@@ -1,12 +1,20 @@
 from rest_framework import serializers
 from .models import Post
 
+
+def validate_rating(rating):
+    if 1 > rating > 10 and not isinstance(rating, int):
+        raise serializers.ValidationError("Rating is invalid.")
+    return rating
+
+
 class PostSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(required=True, allow_blank=False, max_length=100)
-    text = serializers.CharField(required=True, allow_blank=False, max_length=2000)
-    date_published = serializers.DateTimeField(required=True)
-    rating = serializers.IntegerField()
+    date_published = serializers.ReadOnlyField()
+    rating = serializers.IntegerField(validators=[validate_rating])
+
+    class Meta(object):
+        model = Post
+        fields = ('id', 'title', 'text', 'rating', 'author')
 
     def create(self, validated_data):
         return Post.objects.create(**validated_data)

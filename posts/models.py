@@ -1,14 +1,17 @@
 import datetime
 from django.db import models
+from django.utils import timezone
 from django.utils.functional import cached_property
+from users.models import User
 
 
 class Post(models.Model):
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=2000)
-    date_published = models.DateTimeField()
-    likes = models.IntegerField()
-    rating = models.IntegerField(null=True)
+    date_published = models.DateTimeField(default=timezone.now)
+    likes = models.IntegerField(default=0)
+    rating = models.IntegerField()
+    author = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
 
     def get_post_by_id(self, post_id):
         return self.objects.get(pk=post_id)

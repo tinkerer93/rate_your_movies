@@ -44,13 +44,13 @@ class UsersView(APIView):
 
 
 class UserDetailView(APIView):
-    def get(self, request, id):
-        user = self.get_user_or_raise_404(pk=id)
+    def get(self, request, user_id):
+        user = get_user_or_raise_404(pk=user_id)
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, id):
-        user = self.get_user_or_raise_404(pk=id)
+    def put(self, request, user_id):
+        user = get_user_or_raise_404(pk=user_id)
         serializer = UserSerializer(user)
         if serializer.is_valid():
             serializer.update(serializer.validated_data)
@@ -58,8 +58,8 @@ class UserDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id):
-        user = self.get_user_or_raise_404(pk=id)
+    def delete(self, request, user_id):
+        user = get_user_or_raise_404(pk=user_id)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

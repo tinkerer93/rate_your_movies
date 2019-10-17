@@ -2,7 +2,6 @@ from django.db import models, transaction
 from django.utils.functional import cached_property
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from posts.models import Post
 
 
 class UserManager(BaseUserManager):
@@ -44,10 +43,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     @staticmethod
     def get_user_by_params(**kwargs):
         return User.objects.get(**kwargs)
-
-    @cached_property
-    def get_number_of_posts_by_user(self):
-        return self.post.count()
 
     @cached_property
     def get_top_ten_posts_by_user(self):

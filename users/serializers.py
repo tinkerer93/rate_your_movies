@@ -1,13 +1,26 @@
+import os
+import requests
 from rest_framework import serializers
 from .models import User
 
 
+def validate_email(email):
+    emailhunter_token = os.environ['EMAILHUNTER_API_KEY']
+    validation_url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={emailhunter_token}"
+    response = requests.get(validation_url)
+    if response.data.get('result') == "undeliverable":
+        raise serializers.ValidationError("Email can't be verified.")
+    return email
+
+
 class UserSerializer(serializers.ModelSerializer):
     registration_date = serializers.ReadOnlyField()
+    email = serializers.EmailField(validators=[validate_email])
+    posts = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='post_detail')
 
     class Meta(object):
         model = User
-        fields = ('id', 'first_name', 'last_name', 'registration_date', 'email', 'password')
+        fields = ('id', 'first_name', 'last_name', 'registration_date', 'email', 'password', 'posts')
         extra_kwargs = {'password': {'write_only': True}}
 
     def update(self, instance, validated_data):
