@@ -1,29 +1,28 @@
-import datetime
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
-from django.utils.functional import cached_property
 from users.models import User
 
 
 class Post(models.Model):
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=2000)
-    date_published = models.DateTimeField(default=timezone.now)
+    date_published = models.DateField(default=timezone.now)
     likes = models.IntegerField(default=0)
     rating = models.IntegerField()
     author = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
 
-    def get_post_by_id(self, post_id):
-        return self.objects.get(pk=post_id)
+    def get_post_by_params(self, **kwargs):
+        return self.__class__.objects.get(**kwargs)
 
-    def get_posts_older_than_date(self, search_date):
-        return self.objects.filter(self.date_published < search_date)
+    def add_like_to_post(self, post_id):
+        with transaction.atomic():
+            post = self.__class__.objects.get(pk=post_id)
+            post.likes += 1
+            post.save()
 
-    @cached_property
-    def get_posts_for_current_date(self):
-        current_date = datetime.now()
-        return self.objects.filter(self.date_published == current_date)
+    def get_current_posts(self):
+        current_date = timezone.now().date()
+        return self.__class__.objects.filter(date_published=current_date)
 
-    @cached_property
     def get_top_ten_posts(self):
-        return self.objects.order_by('-likes')[:10]
+        return self.__class__.objects.order_by('-likes')[:10]

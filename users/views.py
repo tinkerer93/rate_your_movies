@@ -1,11 +1,13 @@
 import jwt
-from django.contrib.auth import user_logged_in
+from django.contrib.auth import user_logged_in, user_logged_out
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.http import Http404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from .models import User
@@ -15,7 +17,7 @@ from rate_your_movies.settings import SECRET_KEY
 
 def get_user_or_raise_404(**kwargs):
     try:
-        user_details = User.get_user_by_params(**kwargs)
+        user_details = User().get_user_by_params(**kwargs)
     except ObjectDoesNotExist:
         raise Http404("User does not exist.")
     return user_details
@@ -27,13 +29,19 @@ class CreateUserView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            try:
+                serializer.save()
+            except IntegrityError:
+                return Response("User with such credentials already exists.", status=status.HTTP_400_BAD_REQUEST)
             return Response("User was successfully created.", status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UsersView(APIView):
+    authentication_classes = [JSONWebTokenAuthentication]
+    permission_classes = (AllowAny,)
+
     def get(self, request):
         user_list = User.objects.all()
         if len(user_list):
@@ -44,6 +52,9 @@ class UsersView(APIView):
 
 
 class UserDetailView(APIView):
+    authentication_classes = [JSONWebTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, user_id):
         user = get_user_or_raise_404(pk=user_id)
         serializer = UserSerializer(user)
@@ -80,3 +91,11 @@ class UserAuthenticationView(APIView):
         user_details['token'] = token
         user_logged_in.send(sender=user.__class__, request=request, user=user)
         return Response(user_details, status=status.HTTP_200_OK)
+
+
+class UserLogoutView(APIView):
+    def get(self, request):
+        if request.user.is_authenticated:
+            user = request.user
+            user_logged_out.send(sender=user.__class__, request=request, user=user)
+            return Response("User was successfully logged out.", status=status.HTTP_200_OK)

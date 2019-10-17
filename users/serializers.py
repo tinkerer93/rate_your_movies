@@ -7,8 +7,8 @@ from .models import User
 def validate_email(email):
     emailhunter_token = os.environ['EMAILHUNTER_API_KEY']
     validation_url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={emailhunter_token}"
-    response = requests.get(validation_url)
-    if response.data.get('result') == "undeliverable":
+    response = requests.get(validation_url).json()
+    if response["data"]["result"] == "undeliverable":
         raise serializers.ValidationError("Email can't be verified.")
     return email
 

@@ -1,5 +1,4 @@
 from django.db import models, transaction
-from django.utils.functional import cached_property
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
@@ -40,14 +39,5 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(*args, **kwargs)
         return self
 
-    @staticmethod
-    def get_user_by_params(**kwargs):
-        return User.objects.get(**kwargs)
-
-    @cached_property
-    def get_top_ten_posts_by_user(self):
-        return self.objects.select_related('Post').get_top_ten_posts()
-
-    @cached_property
-    def get_current_posts_by_user(self):
-        return self.objects.select_related('Post').get_posts_for_current_date()
+    def get_user_by_params(self, **kwargs):
+        return self.__class__.objects.get(**kwargs)
