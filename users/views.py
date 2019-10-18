@@ -3,7 +3,7 @@ from django.contrib.auth import user_logged_in, user_logged_out
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -33,7 +33,7 @@ class CreateUserView(APIView):
                 serializer.save()
             except IntegrityError:
                 return Response("User with such credentials already exists.", status=status.HTTP_400_BAD_REQUEST)
-            return Response("User was successfully created.", status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,7 +53,6 @@ class UsersView(APIView):
 
 class UserDetailView(APIView):
     authentication_classes = [JSONWebTokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
         user = get_user_or_raise_404(pk=user_id)
@@ -62,10 +61,10 @@ class UserDetailView(APIView):
 
     def put(self, request, user_id):
         user = get_user_or_raise_404(pk=user_id)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
-            serializer.update(serializer.validated_data)
-            return Response("User was successfully updated.", status=status.HTTP_200_OK)
+            serializer.update(user, serializer.validated_data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -76,6 +75,8 @@ class UserDetailView(APIView):
 
 
 class UserAuthenticationView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")

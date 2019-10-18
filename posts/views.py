@@ -1,6 +1,6 @@
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -19,13 +19,12 @@ def get_post_or_raise_404(post_id):
 
 class CreatePostView(APIView):
     authentication_classes = [JSONWebTokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.create(serializer.validated_data)
-            return Response("Post was successfully created.", status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,7 +44,6 @@ class PostsView(APIView):
 
 class PostDetailView(APIView):
     authentication_classes = [JSONWebTokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
         post = get_post_or_raise_404(post_id)
