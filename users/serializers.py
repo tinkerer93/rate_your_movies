@@ -16,7 +16,7 @@ def validate_email(email):
 class UserSerializer(serializers.ModelSerializer):
     registration_date = serializers.ReadOnlyField()
     email = serializers.EmailField(validators=[validate_email])
-    posts = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='post_detail')
+    posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta(object):
         model = User

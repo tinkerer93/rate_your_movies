@@ -29,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     registration_date = models.DateTimeField(default=timezone.now)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
+    token = models.CharField(max_length=200)
 
     objects = UserManager()
 
@@ -41,3 +42,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_user_by_params(self, **kwargs):
         return self.__class__.objects.get(**kwargs)
+
+    def add_auth_token(self, user_id, token):
+        user = self.__class__.objects.get(pk=user_id)
+        user.token = token
+        user.save()
+

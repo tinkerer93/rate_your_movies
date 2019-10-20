@@ -12,8 +12,8 @@ def validate_rating(rating):
 class PostSerializer(serializers.ModelSerializer):
     date_published = serializers.ReadOnlyField()
     rating = serializers.IntegerField(validators=[validate_rating])
-    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    likes = serializers.IntegerField(read_only=True)
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=True)
+    likes = serializers.ReadOnlyField()
 
     class Meta(object):
         model = Post
