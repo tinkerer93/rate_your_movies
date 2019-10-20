@@ -44,6 +44,7 @@ class BasePostViewTest(TestCase):
         try:
             user = User.objects.get(email=self.user["email"])
             user.delete()
+            Post.objects.all().delete()
         except ObjectDoesNotExist:
             pass
 
@@ -72,20 +73,6 @@ class CreatePostViewTest(BasePostViewTest):
                                 data=json.dumps(self.test_post, cls=DjangoJSONEncoder),
                                 content_type='application/json')
         self.assertEqual(resp.status_code, 401)
-
-
-class PostsViewTest(BasePostViewTest):
-    def test_get_all_posts(self):
-        post_list = []
-        for post in range(3):
-            post_list.append(self.test_post)
-        self.client.post('/post/create',
-                         data=json.dumps(post_list, cls=DjangoJSONEncoder),
-                         content_type='application/json',
-                         HTTP_AUTHORIZATION=f"Bearer {self.auth_token}")
-        resp = self.client.get('/post/', content_type='application/json')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.data), 3)
 
 
 class PostDetailViewTest(BasePostViewTest):
@@ -148,4 +135,3 @@ class TopPostsViewTest(BasePostViewTest):
         last_post = Post.objects.get(pk=top_posts.data[9]["id"])
         self.assertEqual(top_post.likes, 10)
         self.assertEqual(last_post.likes, 1)
-

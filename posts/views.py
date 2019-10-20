@@ -36,7 +36,7 @@ class PostsView(APIView):
 
     def get(self, request):
         posts_list = Post.objects.all()
-        if len(posts_list):
+        if posts_list.count() != 0:
             serializer = PostSerializer(posts_list, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
@@ -56,6 +56,7 @@ class PostDetailView(APIView):
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.update(post, serializer.validated_data)
+            serializer.save()
             return Response("Post was successfully updated.", status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
